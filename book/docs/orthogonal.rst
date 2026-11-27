@@ -21,6 +21,9 @@ Orthogonal
 goes further than lines: any two vectors can be orthogonal, and so can a vector and a whole
 frame. The definition is the right angle of :doc:`product-from-projection`.
 
+..
+   covers: pearson-geo/parallel/perpendicular-lines/perpendicular
+
 The definition
 --------------
 

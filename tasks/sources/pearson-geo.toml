@@ -1,0 +1,734 @@
+# Outline of a high-school geometry textbook that "Geometry 2" reads for topics to connect
+# to geometric algebra. Format and rules: the external-source-outlines.md reference doc of
+# github.com/billsix/runClaudeInContainer. Coverage is NOT recorded here: run
+# /source-coverage pearson-geo (it reads the `covers:` tags in book/ and notebooks/).
+#
+# Where each field came from (2026-11-27):
+# - chapter and lesson TITLES: the table of contents as the maintainer typed it from his
+#   own copy, in his lower case, with five spellings corrected by the agent. Lessons marked
+#   "not in the maintainer's table of contents" came from a public curriculum map instead.
+# - NUMBERS and PAGES: a school's public curriculum map for this series (see
+#   tasks/reference/high-school-geometry-objects.md), not the book. A number is given only
+#   where that map gives one. A page is where the lesson's EXERCISES begin, so the lesson
+#   itself starts a few pages earlier. None is verified: page_verified is false throughout.
+# - topic names and summaries: the project's own words.
+#
+# The book is all rights reserved. Add titles, numbers, pages and own-words summaries only;
+# never its definitions, exercises, examples or figures.
+
+citation = "Charles et al., *Geometry: Common Core*, Pearson, 2012"
+title = "Geometry: Common Core"
+authors = ["Randall I. Charles", "Basia Hall", "Dan Kennedy", "Laurie E. Bass", "Art Johnson"]
+publisher = "Pearson"
+year = 2012
+isbn = "978-0-13-328115-6"
+licence = "all rights reserved"
+entered = 2026-11-27
+
+# ---------------------------------------------------------------------------- chapter 1
+
+[[entries]]
+id = "tools"
+number = "1"
+title = "tools of geometry"
+
+[[entries]]
+id = "tools/points-lines-planes"
+number = "1-2"
+title = "points lines and planes"
+page = 16
+
+[[entries]]
+id = "tools/points-lines-planes/point"
+title = "point"
+summary = "a position vector"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/line"
+title = "line"
+summary = "a + t * (b - a) for every number t"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/plane"
+title = "plane"
+summary = "in space, p + s * u + t * v with u ∧ v not zero"
+
+[[entries]]
+id = "tools/points-lines-planes/collinear"
+title = "collinear and coplanar points"
+summary = "c = a + t * (b - a) for some t; later, (b - a) ∧ (c - a) = 0"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/segment"
+title = "segment"
+summary = "a + t * (b - a) for 0 <= t <= 1"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/ray"
+title = "ray"
+summary = "a + t * (b - a) for t >= 0"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/opposite-rays"
+title = "opposite rays"
+summary = "t >= 0 and t <= 0 from the same point"
+decision = "want"
+
+[[entries]]
+id = "tools/points-lines-planes/intersection"
+title = "intersection"
+summary = "the parameters where two constructions are equal; needs solving"
+
+[[entries]]
+id = "tools/segments"
+number = "1-3"
+title = "measuring segments"
+page = 23
+
+[[entries]]
+id = "tools/segments/length"
+title = "length of a segment, distance"
+summary = "|b - a|"
+decision = "want"
+
+[[entries]]
+id = "tools/segments/congruent-segments"
+title = "congruent segments"
+summary = "|b - a| = |d - c|"
+decision = "want"
+
+[[entries]]
+id = "tools/segments/midpoint"
+title = "midpoint"
+summary = "(a + b) / 2, the segment at t = 1/2"
+decision = "want"
+
+[[entries]]
+id = "tools/segments/segment-bisector"
+title = "segment bisector"
+summary = "any line through (a + b) / 2"
+
+[[entries]]
+id = "tools/angles"
+number = "1-4"
+title = "measuring angles"
+page = 31
+
+[[entries]]
+id = "tools/angles/angle"
+title = "angle, vertex, sides"
+summary = "two rays from one point: b + s * (a - b) and b + t * (c - b)"
+decision = "want"
+
+[[entries]]
+id = "tools/angles/measure"
+title = "measure of an angle"
+summary = "cos(θ) from u · v, sin(θ) from u ∧ v, over |u| * |v|"
+decision = "want"
+
+[[entries]]
+id = "tools/angles/kinds"
+title = "acute, right, obtuse and straight angles"
+summary = "the sign of u · v; straight when u ∧ v = 0 and u · v < 0"
+decision = "want"
+
+[[entries]]
+id = "tools/angles/angle-bisector"
+title = "congruent angles, angle bisector"
+summary = "bisector direction: the sum of the two unit vectors"
+note = "named in product-from-projection, not computed"
+
+[[entries]]
+id = "tools/angle-pairs"
+number = "1-5"
+title = "exploring angle pairs"
+page = 38
+note = "adjacent, vertical, complementary, supplementary, linear pair: each is a pair of the angles of 1-4"
+
+[[entries]]
+id = "tools/constructions"
+number = "1-6"
+title = "constructions with compass and straightedge"
+page = 46
+note = "not in the maintainer's table of contents; number, page and subject from the curriculum map; title unconfirmed"
+
+[[entries]]
+id = "tools/coordinate-plane"
+number = "1-7"
+title = "midpoint and distance in the coordinate plane"
+page = 53
+note = "not in the maintainer's table of contents; number, page and title from the curriculum map"
+
+[[entries]]
+id = "tools/coordinate-plane/distance-formula"
+title = "distance formula"
+summary = "the coordinates of |b - a|"
+decision = "want"
+
+[[entries]]
+id = "tools/coordinate-plane/midpoint-formula"
+title = "midpoint formula"
+summary = "the coordinates of (a + b) / 2"
+decision = "want"
+
+[[entries]]
+id = "tools/perimeter-area"
+number = "1-8"
+title = "perimeter, circumference and area"
+page = 64
+note = "not in the maintainer's table of contents; number, page and subject from the curriculum map; title unconfirmed"
+
+[[entries]]
+id = "tools/perimeter-area/perimeter"
+title = "perimeter"
+summary = "the sum of the lengths of the sides"
+decision = "want"
+
+[[entries]]
+id = "tools/perimeter-area/area"
+title = "area"
+summary = "parallelogram |u ∧ v|, triangle half of it"
+decision = "want"
+
+# ---------------------------------------------------------------------------- chapter 2
+
+[[entries]]
+id = "reasoning"
+number = "2"
+title = "reasoning and proof"
+note = "logic; defines no geometric object"
+
+[[entries]]
+id = "reasoning/inductive-reasoning"
+title = "patterns and inductive reasoning"
+
+[[entries]]
+id = "reasoning/conditionals"
+title = "conditional statements"
+
+[[entries]]
+id = "reasoning/truth-tables"
+title = "logic and truth tables"
+
+[[entries]]
+id = "reasoning/biconditionals"
+title = "biconditionals and definitions"
+
+[[entries]]
+id = "reasoning/deductive-reasoning"
+title = "deductive reasoning"
+
+[[entries]]
+id = "reasoning/algebra-and-geometry"
+title = "reasoning in algebra and geometry"
+
+[[entries]]
+id = "reasoning/angles-congruent"
+title = "proving angles congruent"
+
+# ---------------------------------------------------------------------------- chapter 3
+
+[[entries]]
+id = "parallel"
+number = "3"
+title = "parallel and perpendicular lines"
+
+[[entries]]
+id = "parallel/lines-and-angles"
+number = "3-1"
+title = "lines and the angles a transversal makes"
+page = 144
+note = "not in the maintainer's table of contents; number, page and subject from the curriculum map; title unconfirmed"
+
+[[entries]]
+id = "parallel/lines-and-angles/parallel-lines"
+title = "parallel lines"
+summary = "direction vectors with u ∧ v = 0: the sine of the angle between them is 0"
+decision = "want"
+
+[[entries]]
+id = "parallel/lines-and-angles/skew-lines"
+title = "skew lines, parallel planes"
+summary = "in space: (u ∧ v) ∧ (b - a) not zero, with u ∧ v not zero"
+
+[[entries]]
+id = "parallel/lines-and-angles/transversal"
+title = "transversal; corresponding, alternate and same-side angles"
+summary = "angles between the transversal's direction and each line's"
+
+[[entries]]
+id = "parallel/properties"
+title = "properties of parallel lines"
+
+[[entries]]
+id = "parallel/proving-parallel"
+title = "proving lines parallel"
+
+[[entries]]
+id = "parallel/perpendicular-lines"
+number = "3-4"
+title = "parallel and perpendicular lines"
+page = 167
+
+[[entries]]
+id = "parallel/perpendicular-lines/perpendicular"
+title = "perpendicular lines"
+summary = "u · v = 0: the cosine of the angle between them is 0"
+decision = "want"
+
+[[entries]]
+id = "parallel/lines-and-triangles"
+title = "parallel lines and triangles"
+
+[[entries]]
+id = "parallel/constructing"
+title = "constructing parallel and perpendicular lines"
+
+[[entries]]
+id = "parallel/line-equations"
+number = "3-7"
+title = "equations of lines in the coordinate plane"
+page = 194
+
+[[entries]]
+id = "parallel/line-equations/slope"
+title = "slope, slope-intercept and point-slope form"
+summary = "a line p + t * d with d = 1 * e_1 + m * e_2"
+
+[[entries]]
+id = "parallel/slopes"
+number = "3-8"
+title = "slopes of parallel and perpendicular lines"
+page = 201
+summary = "parallel slopes equal; perpendicular slopes multiply to -1, which is d · d' = 0"
+
+# ---------------------------------------------------------------------------- chapter 4
+
+[[entries]]
+id = "congruent-triangles"
+number = "4"
+title = "congruent triangles"
+
+[[entries]]
+id = "congruent-triangles/figures"
+number = "4-1"
+title = "congruent figures"
+page = 222
+summary = "one figure is the other moved by translations, rotations and reflections"
+
+[[entries]]
+id = "congruent-triangles/sss-sas"
+title = "triangle congruence by SSS and SAS"
+
+[[entries]]
+id = "congruent-triangles/asa-aas"
+title = "triangle congruence by ASA and AAS"
+
+[[entries]]
+id = "congruent-triangles/corresponding-parts"
+title = "using corresponding parts of congruent triangles"
+
+[[entries]]
+id = "congruent-triangles/isosceles-equilateral"
+number = "4-5"
+title = "isosceles and equilateral triangles"
+summary = "two, or three, side lengths |b - a| equal"
+
+[[entries]]
+id = "congruent-triangles/right-triangles"
+number = "4-6"
+title = "congruence in right triangles"
+
+[[entries]]
+id = "congruent-triangles/overlapping"
+title = "congruence in overlapping triangles"
+
+# ---------------------------------------------------------------------------- chapter 5
+
+[[entries]]
+id = "within-triangles"
+number = "5"
+title = "relationships within triangles"
+
+[[entries]]
+id = "within-triangles/midsegments"
+number = "5-1"
+title = "midsegments of triangles"
+page = 288
+
+[[entries]]
+id = "within-triangles/midsegments/midsegment"
+title = "midsegment"
+summary = "(a + c) / 2 - (a + b) / 2 = (c - b) / 2: parallel to the third side, half as long"
+decision = "want"
+
+[[entries]]
+id = "within-triangles/bisectors"
+number = "5-2"
+title = "perpendicular and angle bisectors"
+page = 296
+
+[[entries]]
+id = "within-triangles/bisectors/perpendicular-bisector"
+title = "perpendicular bisector"
+summary = "(a + b) / 2 + t * (the quarter turn of b - a)"
+decision = "want"
+
+[[entries]]
+id = "within-triangles/triangle-bisectors"
+number = "5-3"
+title = "bisectors in triangles"
+note = "incenter, circumcenter: the points where the bisectors meet"
+
+[[entries]]
+id = "within-triangles/medians"
+number = "5-4"
+title = "medians and altitudes"
+page = 312
+
+[[entries]]
+id = "within-triangles/medians/median"
+title = "median"
+summary = "from a to (b + c) / 2"
+decision = "want"
+
+[[entries]]
+id = "within-triangles/medians/centroid"
+title = "centroid"
+summary = "where the medians meet, (a + b + c) / 3"
+
+[[entries]]
+id = "within-triangles/medians/altitude"
+title = "altitude"
+summary = "the rejection of a - b away from c - b"
+note = "the projection page names its parts; it does not build the altitude"
+
+[[entries]]
+id = "within-triangles/indirect-proof"
+title = "indirect proof"
+
+[[entries]]
+id = "within-triangles/one-triangle-inequalities"
+title = "inequalities in one triangle"
+
+[[entries]]
+id = "within-triangles/two-triangle-inequalities"
+title = "inequalities in two triangles"
+
+# ---------------------------------------------------------------------------- chapter 6
+
+[[entries]]
+id = "quadrilaterals"
+number = "6"
+title = "polygons and quadrilaterals"
+
+[[entries]]
+id = "quadrilaterals/angle-sums"
+number = "6-1"
+title = "the polygon angle-sum theorems"
+page = 356
+
+[[entries]]
+id = "quadrilaterals/angle-sums/polygon"
+title = "polygon, triangle, quadrilateral"
+summary = "corners a, b, c, ...; the sides b - a, c - b, ... sum to zero going around"
+decision = "want"
+
+[[entries]]
+id = "quadrilaterals/parallelograms"
+number = "6-2"
+title = "properties of parallelograms"
+page = 364
+
+[[entries]]
+id = "quadrilaterals/parallelograms/parallelogram"
+title = "parallelogram"
+summary = "b - a = c - d, exactly when the diagonals bisect each other"
+decision = "want"
+
+[[entries]]
+id = "quadrilaterals/proving-parallelograms"
+title = "proving that a quadrilateral is a parallelogram"
+
+[[entries]]
+id = "quadrilaterals/rhombuses-rectangles-squares"
+number = "6-4"
+title = "properties of rhombuses, rectangles, and squares"
+page = 379
+summary = "a parallelogram with |b - a| = |c - b|, with (b - a) · (c - b) = 0, or with both"
+decision = "want"
+
+[[entries]]
+id = "quadrilaterals/trapezoids-kites"
+number = "6-6"
+title = "trapezoids and kites"
+page = 394
+summary = "(b - a) ∧ (c - d) = 0; two equalities of adjacent side lengths"
+
+[[entries]]
+id = "quadrilaterals/coordinate-polygons"
+title = "polygons in the coordinate plane"
+
+[[entries]]
+id = "quadrilaterals/coordinate-geometry"
+title = "applying coordinate geometry"
+
+[[entries]]
+id = "quadrilaterals/coordinate-proofs"
+title = "proofs using coordinate geometry"
+
+# ---------------------------------------------------------------------------- chapter 7
+
+[[entries]]
+id = "similarity"
+number = "7"
+title = "similarity"
+
+[[entries]]
+id = "similarity/ratios"
+number = "7-1"
+title = "ratios and proportions"
+page = 436
+
+[[entries]]
+id = "similarity/polygons"
+number = "7-2"
+title = "similar polygons"
+page = 444
+summary = "one is the other uniformly scaled, and moved"
+
+[[entries]]
+id = "similarity/triangles"
+title = "proving triangles similar"
+
+[[entries]]
+id = "similarity/right-triangles"
+title = "similarity in right triangles"
+
+[[entries]]
+id = "similarity/proportions"
+title = "proportions in right triangles"
+note = "as typed; it follows 'similarity in right triangles', so check the title against the copy"
+
+# ---------------------------------------------------------------------------- chapter 8
+
+[[entries]]
+id = "right-triangles"
+number = "8"
+title = "right angles and trigonometry"
+note = "as typed; the curriculum map has 'Right Triangles and Trigonometry', so check against the copy"
+
+[[entries]]
+id = "right-triangles/pythagorean"
+title = "the pythagorean theorem and its converse"
+
+[[entries]]
+id = "right-triangles/special"
+title = "special right triangles"
+
+[[entries]]
+id = "right-triangles/trigonometry"
+number = "8-3"
+title = "trigonometry"
+page = 510
+summary = "sine, cosine and tangent of an acute angle as ratios of a right triangle's sides"
+decision = "want"
+
+[[entries]]
+id = "right-triangles/elevation"
+title = "angles of elevation and depression"
+
+[[entries]]
+id = "right-triangles/sines"
+title = "laws of sines"
+
+[[entries]]
+id = "right-triangles/cosines"
+title = "laws of cosines"
+
+# ---------------------------------------------------------------------------- chapter 9
+
+[[entries]]
+id = "transformations"
+number = "9"
+title = "transformations"
+
+[[entries]]
+id = "transformations/translations"
+number = "9-1"
+title = "translations"
+page = 550
+summary = "v ↦ v + b"
+decision = "want"
+
+[[entries]]
+id = "transformations/reflections"
+number = "9-2"
+title = "reflections"
+page = 557
+summary = "v ↦ 2 * proj_n(v) - v"
+decision = "want"
+
+[[entries]]
+id = "transformations/rotations"
+number = "9-3"
+title = "rotations"
+page = 564
+summary = "r(v; θ) = cos(θ) * v + sin(θ) * r(v; π/2)"
+decision = "want"
+
+[[entries]]
+id = "transformations/compositions"
+number = "9-4"
+title = "composition of isometries"
+summary = "composition of functions"
+decision = "want"
+
+[[entries]]
+id = "transformations/congruence"
+number = "9-5"
+title = "congruence transformations"
+
+[[entries]]
+id = "transformations/dilations"
+number = "9-6"
+title = "dilations"
+page = 590
+summary = "v ↦ c + k * (v - c)"
+
+[[entries]]
+id = "transformations/similarity"
+title = "similarity transformations"
+
+# --------------------------------------------------------------------------- chapter 10
+
+[[entries]]
+id = "area"
+number = "10"
+title = "area"
+
+[[entries]]
+id = "area/parallelograms-triangles"
+number = "10-1"
+title = "areas of parallelograms and triangles"
+page = 619
+summary = "|u ∧ v| and half of it; from the corners, the surveyor's formula"
+decision = "want"
+
+[[entries]]
+id = "area/trapezoids-rhombuses-kites"
+title = "areas of trapezoids, rhombuses, and kites"
+
+[[entries]]
+id = "area/regular-polygons"
+number = "10-3"
+title = "areas of regular polygons"
+page = 632
+summary = "a regular polygon's corners: c + (p - c) rotated by 2 * π * k / n"
+
+[[entries]]
+id = "area/similar-figures"
+title = "perimeters and areas of similar figures"
+
+[[entries]]
+id = "area/trigonometry"
+title = "trigonometry and area"
+
+[[entries]]
+id = "area/circles-arcs"
+number = "10-6"
+title = "circles and arcs"
+page = 654
+summary = "a circle: a radius vector rotated by every angle, about a center"
+note = "the rotate page names the circle; it does not build it"
+
+[[entries]]
+id = "area/sectors"
+number = "10-7"
+title = "areas of circles and sectors"
+page = 663
+
+[[entries]]
+id = "area/probability"
+title = "geometric probability"
+
+# --------------------------------------------------------------------------- chapter 11
+
+[[entries]]
+id = "solids"
+number = "11"
+title = "surface area and volume"
+summary = "in space; the volume of the box on three edges is |u ∧ v ∧ w|"
+
+[[entries]]
+id = "solids/cross-sections"
+title = "space figures and cross sections"
+
+[[entries]]
+id = "solids/prisms-cylinders-area"
+title = "surface area of prisms and cylinders"
+
+[[entries]]
+id = "solids/pyramids-cones-area"
+title = "surface areas of pyramids and cones"
+
+[[entries]]
+id = "solids/prisms-cylinders-volume"
+title = "volume of prisms and cylinders"
+
+[[entries]]
+id = "solids/pyramids-cones-volume"
+title = "volume of pyramids and cones"
+
+[[entries]]
+id = "solids/spheres"
+title = "surface areas and volumes of spheres"
+
+[[entries]]
+id = "solids/similar-solids"
+title = "areas and volumes of similar solids"
+
+# --------------------------------------------------------------------------- chapter 12
+
+[[entries]]
+id = "circles"
+number = "12"
+title = "circles"
+
+[[entries]]
+id = "circles/tangents"
+number = "12-1"
+title = "tangent lines"
+summary = "at p, the direction is the quarter turn of p - c: perpendicular to the radius"
+
+[[entries]]
+id = "circles/chords-arcs"
+number = "12-2"
+title = "chords and arcs"
+
+[[entries]]
+id = "circles/inscribed-angles"
+number = "12-3"
+title = "inscribed angles"
+
+[[entries]]
+id = "circles/angle-measures"
+title = "angle measures and segment lengths"
+
+[[entries]]
+id = "circles/coordinate-plane"
+number = "12-5"
+title = "circles in the coordinate plane"
+page = 801
+summary = "|v - c| = r"
+
+[[entries]]
+id = "circles/locus"
+number = "12-6"
+title = "locus: a set of points"
+summary = "the set of vectors that satisfy an equation"

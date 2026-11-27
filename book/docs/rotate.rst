@@ -9,6 +9,9 @@
    A copy of the license is available at
    https://www.gnu.org/licenses/fdl-1.3.html.
 
+..
+   covers: pearson-geo/transformations/rotations
+
 Rotate
 ======
 
