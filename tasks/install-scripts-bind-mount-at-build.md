@@ -85,7 +85,8 @@ Makefile, script or workflow in the repo does. A script that is only *mentioned*
 
 - `proofs/lean-toolchain` is a false lead: the Mathlib bake in the next layer reads it from
   `/opt/gacalc-proofs/`, so it stays `COPY`.
-- Still to do here: the `[HOST] make image` confirmation, the Dockerfile comments that still describe
-  the removed `COPY` lines, and the first GitHub Actions run (`checks.yml` builds with Docker).
+- The maintainer's host `make image` (podman, SELinux enforcing) built all 31 steps on 2026-11-27.
+- Still to do here: the first GitHub Actions run (`checks.yml` builds with Docker), and a decision on
+  the remaining candidates in the table (`constraints.txt` and the other non-script rows).
 
 ## Open questions
